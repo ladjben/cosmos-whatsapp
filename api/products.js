@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 
@@ -11,6 +14,50 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Charger les clés RSA
+const PASSPHRASE = process.env.RSA_PASSPHRASE || 'cosmos_algerie_2024_whatsapp_flows';
+let privateKey;
+let publicKey;
+
+try {
+  privateKey = fs.readFileSync(path.join(__dirname, '../private.pem'), 'utf8');
+  publicKey = fs.readFileSync(path.join(__dirname, '../public.pem'), 'utf8');
+  console.log('✅ Clés RSA chargées avec succès');
+} catch (error) {
+  console.warn('⚠️  Clés RSA non trouvées. Lance "node generate-keys.js"');
+}
+
+// Fonction pour déchiffrer les données WhatsApp
+function decryptData(encryptedData) {
+  try {
+    const buffer = Buffer.from(encryptedData, 'base64');
+    const decrypted = crypto.privateDecrypt(
+      {
+        key: privateKey,
+        passphrase: PASSPHRASE
+      },
+      buffer
+    );
+    return JSON.parse(decrypted.toString('utf8'));
+  } catch (error) {
+    console.error('Erreur de déchiffrement:', error.message);
+    return null;
+  }
+}
+
+// Fonction pour chiffrer les données pour WhatsApp
+function encryptData(data) {
+  try {
+    const jsonString = JSON.stringify(data);
+    const buffer = Buffer.from(jsonString, 'utf8');
+    const encrypted = crypto.publicEncrypt(publicKey, buffer);
+    return encrypted.toString('base64');
+  } catch (error) {
+    console.error('Erreur de chiffrement:', error.message);
+    return null;
+  }
+}
 
 // Configuration du port
 const PORT = process.env.PORT || 3000;
@@ -311,16 +358,28 @@ app.options('/api/products', (req, res) => {
   res.sendStatus(200);
 });
 
-// Route principale POST pour WhatsApp Flows
+// Route principale POST pour WhatsApp Flows avec encryption
 app.post('/api/products', (req, res) => {
-  console.log('📦 Requête reçue:', JSON.stringify(req.body, null, 2));
+  console.log('📦 Requête reçue (encrypted):', req.body);
 
   try {
-    const { action } = req.body;
+    // Déchiffrer les données entrantes
+    let decryptedData;
+    
+    if (req.body.encrypted_data) {
+      decryptedData = decryptData(req.body.encrypted_data);
+      console.log('📋 Données déchiffrées:', JSON.stringify(decryptedData, null, 2));
+    } else {
+      // Mode non-encrypté pour développement/test
+      console.log('⚠️  Mode non-encrypté - Utilise les données brutes');
+      decryptedData = req.body;
+    }
 
-    // Action INIT ou GET_PRODUCTS : retourner tous les produits
-    if (action === 'INIT' || action === 'GET_PRODUCTS' || !action) {
-      console.log('📋 Récupération de tous les produits:', products.length);
+    const { action } = decryptedData;
+
+    // Action INIT : Retourner tous les produits
+    if (action === 'INIT') {
+      console.log('📋 INIT - Récupération de tous les produits:', products.length);
       
       const response = {
         products: products.map(p => ({
@@ -331,18 +390,25 @@ app.post('/api/products', (req, res) => {
         }))
       };
 
-      console.log('✅ Produits envoyés:', response.products.length);
-      return res.json(response);
+      // Chiffrer la réponse
+      if (req.body.encrypted_data) {
+        const encryptedResponse = encryptData(response);
+        console.log('✅ Réponse chiffrée envoyée:', products.length, 'produits');
+        return res.json({ encrypted_data: encryptedResponse });
+      } else {
+        console.log('✅ Produits envoyés (non-encrypté):', response.products.length);
+        return res.json(response);
+      }
     }
 
-    // Action GET_PRODUCT_DETAILS : retourner les détails d'un produit spécifique
-    if (action === 'GET_PRODUCT_DETAILS') {
-      const { product_id } = req.body;
+    // Action data_exchange : Retourner les détails d'un produit
+    if (action === 'data_exchange') {
+      const { product_id } = decryptedData;
 
       if (!product_id) {
         console.log('❌ product_id manquant');
         return res.status(400).json({
-          error: 'product_id est requis pour GET_PRODUCT_DETAILS'
+          error: 'product_id est requis pour data_exchange'
         });
       }
 
@@ -355,14 +421,22 @@ app.post('/api/products', (req, res) => {
         });
       }
 
-      console.log('✅ Détails produit envoyés:', product.title);
-
-      return res.json({
+      const response = {
         product_name: product.title,
         product_price: product.price,
         product_image: product.image,
         product_description: product.description
-      });
+      };
+
+      console.log('✅ Détails produit envoyés:', product.title);
+
+      // Chiffrer la réponse
+      if (req.body.encrypted_data) {
+        const encryptedResponse = encryptData(response);
+        return res.json({ encrypted_data: encryptedResponse });
+      } else {
+        return res.json(response);
+      }
     }
 
     // Action non reconnue

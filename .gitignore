@@ -9,6 +9,11 @@ yarn-error.log*
 .env.local
 .env.production
 
+# Clés RSA - CRITIQUE À PROTÉGER
+private.pem
+*.pem
+signature.txt
+
 # Système
 .DS_Store
 *.swp

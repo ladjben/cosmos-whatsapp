@@ -5,7 +5,10 @@
   "main": "api/products.js",
   "scripts": {
     "start": "node api/products.js",
-    "dev": "node api/products.js"
+    "dev": "node api/products.js",
+    "generate-keys": "node generate-keys.js",
+    "sign-key": "node sign-public-key.js",
+    "test": "node test-local.js"
   },
   "keywords": [
     "whatsapp",
