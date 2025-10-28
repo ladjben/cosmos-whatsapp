@@ -1,0 +1,6 @@
+# Copie ce fichier en .env et remplis les valeurs
+
+META_APP_ID=your_app_id_here
+META_APP_SECRET=your_app_secret_here
+META_PHONE_NUMBER_ID=your_phone_number_id_here
+

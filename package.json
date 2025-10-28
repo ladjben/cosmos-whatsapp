@@ -9,6 +9,7 @@
     "generate-keys": "node generate-keys.js",
     "sign-key": "node sign-public-key.js",
     "setup": "node setup-keys.js",
+    "sign-meta": "node sign-with-meta-api.js",
     "test": "node test-local.js"
   },
   "keywords": [
@@ -20,8 +21,9 @@
   "author": "Cosmos Algérie",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5"
+    "axios": "^1.13.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2"
   }
 }
-

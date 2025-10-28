@@ -8,6 +8,8 @@ yarn-error.log*
 .env
 .env.local
 .env.production
+.env.*
+!.env.example
 
 # Clés RSA - CRITIQUE À PROTÉGER
 private.pem
