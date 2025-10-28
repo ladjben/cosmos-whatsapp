@@ -21,11 +21,30 @@ let privateKey;
 let publicKey;
 
 try {
-  privateKey = fs.readFileSync(path.join(__dirname, '../private.pem'), 'utf8');
-  publicKey = fs.readFileSync(path.join(__dirname, '../public.pem'), 'utf8');
+  // Essayer de charger depuis la variable d'environnement (Vercel)
+  if (process.env.PRIVATE_KEY) {
+    privateKey = process.env.PRIVATE_KEY;
+    console.log('✅ Clé privée chargée depuis PRIVATE_KEY');
+  } else {
+    // Sinon essayer depuis le fichier local
+    privateKey = fs.readFileSync(path.join(__dirname, '../private.pem'), 'utf8');
+    console.log('✅ Clé privée chargée depuis private.pem');
+  }
+
+  // Essayer de charger la clé publique depuis la variable d'environnement (Vercel)
+  if (process.env.PUBLIC_KEY) {
+    publicKey = process.env.PUBLIC_KEY;
+    console.log('✅ Clé publique chargée depuis PUBLIC_KEY');
+  } else {
+    // Sinon essayer depuis le fichier local
+    publicKey = fs.readFileSync(path.join(__dirname, '../public.pem'), 'utf8');
+    console.log('✅ Clé publique chargée depuis public.pem');
+  }
+
   console.log('✅ Clés RSA chargées avec succès');
 } catch (error) {
-  console.warn('⚠️  Clés RSA non trouvées. Lance "node generate-keys.js"');
+  console.warn('⚠️  Clés RSA non trouvées:', error.message);
+  console.warn('💡 Configurer PRIVATE_KEY et PUBLIC_KEY dans Vercel');
 }
 
 // Fonction pour déchiffrer les données WhatsApp
