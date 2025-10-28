@@ -1,0 +1,23 @@
+{
+  "name": "cosmos-whatsapp-flows",
+  "version": "1.0.0",
+  "description": "Serveur WhatsApp Flows pour Cosmos Algérie - Black Friday Collection",
+  "main": "api/products.js",
+  "scripts": {
+    "start": "node api/products.js",
+    "dev": "node api/products.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "flows",
+    "cosmos",
+    "algerie"
+  ],
+  "author": "Cosmos Algérie",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
+
