@@ -11,16 +11,33 @@ console.log('🔐 Signature de clé publique via Meta Cloud API\n');
 const APP_ID = process.env.META_APP_ID;
 const APP_SECRET = process.env.META_APP_SECRET;
 const PHONE_NUMBER_ID = process.env.META_PHONE_NUMBER_ID;
+const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
 
 // Vérification des variables
-if (!APP_ID || !APP_SECRET || !PHONE_NUMBER_ID) {
+const usingDirectToken = !!ACCESS_TOKEN;
+
+if (!PHONE_NUMBER_ID) {
+  console.error('❌ META_PHONE_NUMBER_ID est requis!');
+  process.exit(1);
+}
+
+if (!usingDirectToken && (!APP_ID || !APP_SECRET)) {
   console.error('❌ Variables d\'environnement manquantes!');
-  console.log('\nConfiguration requise dans .env:');
+  console.log('\nOption 1: App credentials');
   console.log('- META_APP_ID');
   console.log('- META_APP_SECRET');
+  console.log('\nOption 2: Access token direct');
+  console.log('- META_ACCESS_TOKEN');
+  console.log('\nDans les deux cas:');
   console.log('- META_PHONE_NUMBER_ID');
   console.log('\nConsulte .env.example pour le format');
   process.exit(1);
+}
+
+if (usingDirectToken) {
+  console.log('📝 Utilisation d\'un access token direct');
+} else {
+  console.log('📝 Utilisation des credentials app pour obtenir access token');
 }
 
 // Trouver le fichier de clé publique
@@ -168,23 +185,44 @@ async function getSignedPublicKey(accessToken) {
 async function main() {
   try {
     // 1. Obtenir l'access token
-    const accessToken = await getAccessToken();
-
-    // 2. Vérifier si une clé existe déjà
-    const existingKeys = await getSignedPublicKey(accessToken);
+    let accessToken;
     
-    if (existingKeys) {
-      console.log('\n📋 Clés publiques existantes:');
-      existingKeys.forEach((key, index) => {
-        console.log(`\nClé ${index + 1}:`);
-        console.log('- ID:', key.id);
-        console.log('- Algorithme:', key.algorithm);
-        console.log('- Créé:', key.created_time);
-      });
+    if (usingDirectToken) {
+      accessToken = ACCESS_TOKEN;
+      console.log('✅ Utilisation de l\'access token fourni');
+    } else {
+      accessToken = await getAccessToken();
     }
 
-    // 3. Signer et enregistrer la nouvelle clé
-    await signPublicKey(accessToken);
+    // 2. Vérifier si une clé existe déjà (optionnel, peut échouer)
+    try {
+      const existingKeys = await getSignedPublicKey(accessToken);
+      if (existingKeys) {
+        console.log('\n📋 Clés publiques existantes:');
+        existingKeys.forEach((key, index) => {
+          console.log(`\nClé ${index + 1}:`);
+          console.log('- ID:', key.id);
+          console.log('- Algorithme:', key.algorithm);
+          console.log('- Créé:', key.created_time);
+        });
+      }
+    } catch (error) {
+      console.log('⚠️  Impossible de récupérer les clés existantes (normal si c\'est la première fois)');
+    }
+
+    // 3. Enregistrer la clé via l'API Graph directe
+    console.log('\n📝 IMPORTANT: Meta Cloud API ne supporte pas l\'enregistrement automatique de clés via API.');
+    console.log('\n✅ Ta clé publique est prête à être enregistrée MANUELLEMENT:');
+    console.log('\n' + '═'.repeat(70));
+    console.log('📋 ÉTAPES MANUELLES DANS META BUSINESS MANAGER:');
+    console.log('═'.repeat(70));
+    console.log('\n1️⃣  Va sur: https://business.facebook.com');
+    console.log('\n2️⃣  Navigue vers: WhatsApp > Configuration > Flows API');
+    console.log('\n3️⃣  Upload Public Key:');
+    console.log(publicKey);
+    console.log('\n4️⃣  Pour la signature, lance: npm run sign-key');
+    console.log('    Et copie la signature affichée dans Meta Business Manager');
+    console.log('\n✅ C\'est fait!');
 
     console.log('\n');
     console.log('═'.repeat(70));

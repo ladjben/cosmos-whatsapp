@@ -1,6 +1,6 @@
 # Copie ce fichier en .env et remplis les valeurs
 
-META_APP_ID=your_app_id_here
-META_APP_SECRET=your_app_secret_here
-META_PHONE_NUMBER_ID=your_phone_number_id_here
+META_APP_ID=629481306816205
+META_APP_SECRET=EAAI8gomvfs0BPyNvzTZBWB1dX1I03i0bYq9rfJuZCzAban4ZBzql4ETOpTWtVOixcILCxXAeXDekXMec75w9S95WC0JnPQfKTU2nR14wBXEwCcTFSrac6TOnYfgP1CgfLHimSvwfZC6wHOmaFuJqNPZCX4BIadOmBQ0ZC8FBqApy00ukNtZCBO2ds8yYfxQvY2TowZDZD
+META_PHONE_NUMBER_ID=+213560939708
 
