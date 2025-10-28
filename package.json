@@ -8,6 +8,7 @@
     "dev": "node api/products.js",
     "generate-keys": "node generate-keys.js",
     "sign-key": "node sign-public-key.js",
+    "setup": "node setup-keys.js",
     "test": "node test-local.js"
   },
   "keywords": [

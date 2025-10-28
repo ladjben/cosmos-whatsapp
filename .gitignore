@@ -11,8 +11,11 @@ yarn-error.log*
 
 # Clés RSA - CRITIQUE À PROTÉGER
 private.pem
+private-key-whatsapp.pem
+public-key-whatsapp.pem
 *.pem
 signature.txt
+signature-whatsapp.txt
 
 # Système
 .DS_Store
